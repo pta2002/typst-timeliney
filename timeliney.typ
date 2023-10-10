@@ -237,11 +237,10 @@
             at: 0,
             body: "",
             style: milestone-line-style,
-            type: "milestone",
             overhang: milestone-overhang,
             spacing: spacing,
-            date: none,
-            anchor: "top"
+            anchor: "top",
+            type: "milestone"
           ) = {
             if milestone-layout == "in-place" {
               let x = (end_x - start_x) * (at / n_cols) + start_x
