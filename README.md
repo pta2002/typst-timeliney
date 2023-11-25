@@ -57,7 +57,7 @@ Here's a fully-featured example:
 
 ![Example Gantt chart](sample.png)
 
-## Instalation
+## Installation
 Import with `#import "@preview/timeliney:0.0.1"`. Then, call the `timeliney.timeline` function.
 
 ## Documentation
