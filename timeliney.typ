@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.2.0": canvas, draw
+#import "@preview/cetz:0.1.2": canvas, draw
 
 #let timeline(
   body,
