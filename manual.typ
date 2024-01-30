@@ -3,10 +3,11 @@
 
 #show: mantys.with(
   ..toml("typst.toml").package,
-  example-imports: ("@local/timeliney:0.0.1": "*"),
+  example-imports: ("../timeliney.typ": "*"),
 )
 
-#command("timeline",
+#command(
+  "timeline",
   arg[body],
   arg(spacing: 5pt),
   arg(show-grid: false),
@@ -16,49 +17,70 @@
   arg(milestone-overhang: 5pt),
   arg(milestone-layout: "in-place"),
   arg(box-milestones: true),
-  arg(milestone-line-style: ())
+  arg(milestone-line-style: ()),
+  arg(offset: 0),
 )[
-  #argument("spacing", type: "length", default: 5pt)[
-    Spacing between lines
-  ]
+#argument("spacing", type: "length", default: 5pt)[
+  Spacing between lines
+]
 
-  #argument("show-grid", type: "boolean", default: true)[
-    Show a grid behind the timeline
-  ]
+#argument("show-grid", type: "boolean", default: true)[
+  Show a grid behind the timeline
+]
 
-  #argument("grid-style", type: "dictionary", default: (stroke: (dash: "dashed", thickness: .5pt, paint: gray)))[
-    The style to use for the grid (has no effect if `show-grid` is false)
-  ]
+#argument(
+  "grid-style",
+  type: "dictionary",
+  default: (stroke: (dash: "dashed", thickness: .5pt, paint: gray)),
+)[
+The style to use for the grid (has no effect if `show-grid` is false)
+]
 
-  #argument("task-vline", type: "boolean", default: true)[
-    Show a vertical line next to the task names
-  ]
+#argument("task-vline", type: "boolean", default: true)[
+  Show a vertical line next to the task names
+]
 
-  #argument("line-style", type: "dictionary", default: (stroke: 3pt))[
-    The style to use for the lines in the timelines
-  ]
+#argument("line-style", type: "dictionary", default: (stroke: 3pt))[
+  The style to use for the lines in the timelines
+]
 
-  #argument("milestone-overhang", type: "length", default: 5pt)[
-    How far the milestone lines should extend past the end of the timeline (only has an effect if `milestone-layout` is `in-place`)
-  ]
+#argument(
+  "milestone-overhang",
+  type: "length",
+  default: 5pt,
+)[
+How far the milestone lines should extend past the end of the timeline (only has
+an effect if `milestone-layout` is `in-place`)
+]
 
-  #argument("milestone-layout", type: "string", default: "in-place")[
-    How to lay out the milestone lines. Can be `in-place` or `aligned`.
+#argument(
+  "milestone-layout",
+  type: "string",
+  default: "in-place",
+)[
+How to lay out the milestone lines. Can be `in-place` or `aligned`.
 
-    `in-place` displays the milestones directly below the timeline, and tries to lay them out as well as possible to avoid colisions.
+`in-place` displays the milestones directly below the timeline, and tries to lay
+them out as well as possible to avoid colisions.
 
-    `aligned` displays the milestones in a separate box, aligned with the task titles.
-  ]
+`aligned` displays the milestones in a separate box, aligned with the task
+titles.
+]
 
-  #argument("box-milestones", type: "boolean", default: true)[
-    Whether to draw a box around the milestones (only has an effect if `milestone-layout` is `aligned`)
-  ]
+#argument("box-milestones", type: "boolean", default: true)[
+Whether to draw a box around the milestones (only has an effect if
+`milestone-layout` is `aligned`)
+]
 
-  #argument("milestone-line-style", type: "dictionary", default: ())[
-    The style to use for the milestone lines
-  ]
+#argument("milestone-line-style", type: "dictionary", default: ())[
+  The style to use for the milestone lines
+]
 
-  #example[```
+#argument("offset", type: "float", default: 0)[
+  Offset to be automatically added to all the timespans
+]
+
+#example[```
   #timeline(
   show-grid: true,
   {
@@ -67,7 +89,7 @@
       group(..range(4).map(n => strong("Q" + str(n + 1)))),
       group(..range(4).map(n => strong("Q" + str(n + 1)))),
     )
-  
+
     taskgroup(title: [*Research*], {
       task("Research the market", (0, 2), style: (stroke: 2pt + gray))
       task("Conduct user surveys", (1, 3), style: (stroke: 2pt + gray))
@@ -109,22 +131,22 @@
 ]
 
 #command("headerline", arg("..titles", is-sink: true))[
-  #argument("titles", type: "array", is-sink: true)[
-    The titles to display in the header line.
+#argument("titles", type: "array", is-sink: true)[
+The titles to display in the header line.
 
-    Can be specified in several different formats:
+Can be specified in several different formats:
 
-    #example[```
+#example[```
     // One column per title
     #headerline("Title 1", "Title 2", "Title 3")
     ```]
 
-    #example[```
+#example[```
     // Each title occupies 2 columns
     #headerline(("Title 1", 2), ("Title 2", 2))
     ```]
 
-    #example[```
+#example[```
     // Two groups of titles
     #headerline(
       group("Q1", "Q2", "Q3", "Q4"),
@@ -132,7 +154,7 @@
     )
     ```]
 
-    #example[```
+#example[```
     // Two lines of headers
     #headerline(
       group(("2023", 4), ("2024", 4))
@@ -142,53 +164,67 @@
       group("Q1", "Q2", "Q3", "Q4"),
     )
     ```]
-  ]
+]
 ]
 
 #command("group", arg("..titles", is-sink: true))[
-  Defines a group of titles in a header line.
+Defines a group of titles in a header line.
 
-  Takes the same options as `#headerline`.
+Takes the same options as `#headerline`.
 ]
 
-#command("task", arg([name]), arg([style], default: none), arg("..lines", is-sink: true))[
-  Defines a task
+#command(
+  "task",
+  arg([name]),
+  arg([style], default: none),
+  arg("..lines", is-sink: true),
+)[
+Defines a task
 
-  #argument("name", type: "content")[
-    The name of the task
-  ]
+#argument("name", type: "content")[
+  The name of the task
+]
 
-  #argument("style", type: "dictionary", default: none)[
-    The style to use for the task line. If not specified, the default style will be used.
-  ]
+#argument(
+  "style",
+  type: "dictionary",
+  default: none,
+)[
+  The style to use for the task line. If not specified, the default style will be
+  used.
+]
 
-  #argument("..lines", type: "array")[
-    The lines to display in the task. Can be specified in several different formats:
+#argument(
+  "..lines",
+  type: "array",
+)[
+The lines to display in the task. Can be specified in several different formats:
 
-    #example[```
+#example[```
     // Spans 1 month, starting at the first month of the timeline
     #task("Task", (0, 1))
     ```]
 
-    #example[```
+#example[```
     // One red line at month 1, and a line spanning 2 months starting at month 4
     #task("Task", (from: 0, to: 1, style: (stroke: red)), (3, 5))
     ```]
-  ]
+]
 ]
 
 #command("taskgroup", arg("title", default: none), arg("tasks"))[
-  Groups tasks together in a box. If `title` is specified, a title will be displayed, with a line spanning all the inner tasks.
+Groups tasks together in a box. If `title` is specified, a title will be
+displayed, with a line spanning all the inner tasks.
 
-  #argument("title", type: "content", default: none)[
-    The title of the task group
-  ]
+#argument("title", type: "content", default: none)[
+  The title of the task group
+]
 
-  #argument("tasks", type: "content")[
-    The tasks to display in the group
-  ]
-  
-  #example[```
+#argument("tasks", type: "content")[
+  The tasks to display in the group
+]
+
+#example[```
   #taskgroup(title: "Research", {
     task("Task 1", (0, 1))
     task("Task 2", (3, 5))
@@ -196,30 +232,53 @@
   ```]
 ]
 
-#command("milestone", arg("body"), arg("at"), arg("style"), arg("overhang"), arg("spacing"), arg(anchor: "top"))[
-  Defines a milestone. The way it's displayed depends on the `milestone-layout` option of the `#timeline` command.
+#command(
+  "milestone",
+  arg("body"),
+  arg("at"),
+  arg("style"),
+  arg("overhang"),
+  arg("spacing"),
+  arg(anchor: "top"),
+)[
+Defines a milestone. The way it's displayed depends on the `milestone-layout`
+option of the `#timeline` command.
 
-  #argument("at", type: "float")[
-    The month at which the milestone should be displayed. Can be fractional.
-  ]
+#argument(
+  "at",
+  type: "float",
+)[
+  The month at which the milestone should be displayed. Can be fractional.
+]
 
-  #argument("style", type: "dictionary", default: ())[
-    Style for the milestone line. Defaults to `milestone-line-style`.
-  ]
+#argument("style", type: "dictionary", default: ())[
+Style for the milestone line. Defaults to `milestone-line-style`.
+]
 
-  #argument("overhang", type: "length", default: 5pt)[
-    How far the milestone line should extend past the end of the timeline. Defaults to `milestone-overhang`.
-  ]
+#argument(
+  "overhang",
+  type: "length",
+  default: 5pt,
+)[
+How far the milestone line should extend past the end of the timeline. Defaults
+to `milestone-overhang`.
+]
 
-  #argument("spacing", type: "length", default: 5pt)[
-    Spacing between the milestone line and the text. Defaults to `spacing`.
-  ]
+#argument("spacing", type: "length", default: 5pt)[
+Spacing between the milestone line and the text. Defaults to `spacing`.
+]
 
-  #argument("anchor", type: "string", default: "top")[
-    The anchor point for the milestone text. Can be `top`, `bottom`, `left`, `right`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, `center`, `center-left`, `center-right`, `center-top`, `center-bottom`. Defaults to `top`.
-  ]
+#argument(
+  "anchor",
+  type: "string",
+  default: "top",
+)[
+The anchor point for the milestone text. Can be `top`, `bottom`, `left`,
+`right`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, `center`,
+`center-left`, `center-right`, `center-top`, `center-bottom`. Defaults to `top`.
+]
 
-  #argument("body", type: "content")[
-    The text to display next to the milestone line
-  ]
+#argument("body", type: "content")[
+  The text to display next to the milestone line
+]
 ]

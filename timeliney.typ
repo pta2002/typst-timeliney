@@ -11,6 +11,7 @@
   milestone-layout: "in-place",
   box-milestones: true,
   milestone-line-style: (),
+  offset: 0,
 ) = style(
   styles => {
     layout(
@@ -247,13 +248,13 @@
                     let start = (
                       a: (start_x, task_start_y),
                       b: (end_x, task_start_y),
-                      number: gantt_line.from / n_cols,
+                      number: (gantt_line.from + offset) / n_cols,
                     )
 
                     let end = (
                       a: (start_x, task_start_y),
                       b: (end_x, task_start_y),
-                      number: (gantt_line.to) / n_cols,
+                      number: (gantt_line.to + offset) / n_cols,
                     )
 
                     let style = line-style
@@ -310,7 +311,7 @@
                     type: "milestone",
                   ) = {
                     if milestone-layout == "in-place" {
-                      let x = (end_x - start_x) * (at / n_cols) + start_x
+                      let x = (end_x - start_x) * ((at + offset) / n_cols) + start_x
 
                       get-ctx(
                         ctx => {
