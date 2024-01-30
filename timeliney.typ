@@ -1,297 +1,372 @@
-#import "@preview/cetz:0.1.2": canvas, draw
+#import "@preview/cetz:0.2.0": canvas, draw
 
 #let timeline(
   body,
   spacing: 5pt,
-  
   show-grid: false,
   grid-style: (stroke: (dash: "dashed", thickness: .5pt, paint: gray)),
-
   tasks-vline: true,
   line-style: (stroke: 3pt),
-
   milestone-overhang: 5pt,
   milestone-layout: "in-place",
   box-milestones: true,
   milestone-line-style: (),
-) =  style(styles => {
-  layout(size => {
-    canvas(debug: false, length: size.width, {
-      import draw: *
-  
-      let headers = ()
-      let tasks = ()
-      let flat_tasks = ()
-      let milestones = ()
-      let n_cols = 0
-      let pt = 1 / size.width.pt()
-  
-      for line in body {
-        if line.type == "header" {
-          headers.push(line.headers)
-          if line.total > n_cols {
-            n_cols = line.total
-          }
-        } else if line.type == "task" or line.type == "taskgroup" {
-          tasks.push(line)
-        } else if line.type == "milestone" {
-          milestones.push(line)
-        }
-      }
-  
-      // Task titles
-      group({
-        let i = 0
-        for task in tasks {
-          if task.type == "task" {
-            content((rel: (0, 0)), task.name, anchor: "top", name: "task" + str(i), padding: spacing)
-            
-            anchor("task" + str(i) + "-bottom", (rel: (0, 0), to: "task" + str(i) + ".bottom", update: true))
-            anchor("task" + str(i) + "-top", (rel: (0, 0), to: "task" + str(i) + ".top-left", update: false))
-            anchor("task" + str(i), (rel: (0,0), to: "task" + str(i) + ".right", update: false))
-  
-            flat_tasks.push(task)
-  
-            i += 1
-          } else if task.type == "taskgroup" {
-            for t in task.tasks {
-              content((rel: (0, 0)), t.name, anchor: "top", name: "task" + str(i), padding: spacing)
-              
-              anchor("task" + str(i) + "-bottom", (rel: (0, 0), to: "task" + str(i) + ".bottom", update: true))
-              anchor("task" + str(i) + "-top", (rel: (0, 0), to: "task" + str(i) + ".top-left", update: false))
-              anchor("task" + str(i), (rel: (0,0), to: "task" + str(i) + ".right", update: false))
-  
-              flat_tasks.push(t)
-  
-              i += 1
-            }
-          }
-        }
-  
-        if milestone-layout == "aligned" {
-          for (i, milestone) in milestones.enumerate() {
-            content((rel: (0, 0)), milestone.body, anchor: "top", name: "milestone" + str(i), padding: spacing)
-            
-            anchor("milestone" + str(i) + "-bottom", (rel: (0, 0), to: "milestone" + str(i) + ".bottom", update: true))
-            anchor("milestone" + str(i) + "-right", (rel: (0, 0), to: "milestone" + str(i) + ".right", update: false))
-            anchor("milestone" + str(i) + "-top", (rel: (0, 0), to: "milestone" + str(i) + ".top", update: false))
-          }
-        }
-      }, name: "titles")
-  
-      // Now that we have laid out the task titles, we can render the task group boxes
-      group(ctx => {
-        on-layer(1, {
-          let (start_x, _, _) = coordinate.resolve(ctx, "titles.top-left")
-          let end_x = 1 + start_x
-          
-          let i = 0
-          for group in tasks {
-            if group.type != "taskgroup" {
-              i += 1
-              continue
-            }
-    
-            let start_i = i
-            let group_start = none
-            let group_end = none
-            
-            for task in group.tasks {
-              if group_start == none {
-                let (_, start_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-top")
-                group_start = (start_x, start_y)
-              }
-    
-              let (_, end_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
-              group_end = (end_x, end_y)
-    
-              i += 1
-            }
-    
-            rect(group_start, group_end, stroke: 1pt)
-          }
-    
-          if tasks-vline {
-            line("titles.top-right", "titles.bottom-right")
-          }
-    
-          if box-milestones and milestone-layout == "aligned" {
-            let start = none
-            let end = none
-            
-            for (i, milestone) in milestones.enumerate() {
-              if start == none {
-                let (_, start_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-top")
-                start = (start_x, start_y)
-              }
-              let (_, end_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom")
-              end = (end_x, end_y)
-            }
-    
-            rect(start, end, stroke: 1pt)
-          }
-        })
-      }, name: "boxes")
-  
-      get-ctx(ctx => {
-        let (start_x, start_y, _) = coordinate.resolve(ctx, "titles.top-right")
-        let end_x = 1 + coordinate.resolve(ctx, "titles.top-left").at(0)
-        let end_y = coordinate.resolve(ctx, "titles.bottom").at(1)
-  
-        group({
-          for (i, header) in headers.rev().enumerate() {
-            let passed = 0
-            for group in header {
-              let group_start = none
-              let group_end = none
-              
-              for (name, len) in group.titles {
-                let start = (
-                  a: (start_x, start_y + 16 * (i + 1) * pt),
-                  b: (end_x, start_y + 16 * (i + 1) * pt),
-                  number: passed / n_cols
-                )
-  
-                if group_start == none { group_start = start }
-    
-                let end = (
-                  a: (start_x, start_y + 16 * i * pt),
-                  b: (end_x, start_y + 16 * i * pt),
-                  number: (passed + len) / n_cols
-                )
-  
-                group_end = end
-    
-                content(start, end, anchor: "top-left", align(center + horizon, name))
-    
-                passed += len
-              }
-  
-              let group_style = (stroke: 1pt + black)
-              if "style" in group {
-                group_style = group.style
-              }
-              rect(group_start, group_end, ..group_style)
-            }
-          }
-        }, name: "top-headers")
-  
-        // Draw the lines
-        for (i, task) in flat_tasks.enumerate() {
-          let start = "titles.task" + str(i)
-          let (_, task_start_y, _) = coordinate.resolve(ctx, "titles.task" + str(i))
-          let (task_top_x, task_top_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-top")
-          let (_, task_bottom_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
-  
-          for gantt_line in task.lines {
-            let start = (
-              a: (start_x, task_start_y),
-              b: (end_x, task_start_y),
-              number: gantt_line.from / n_cols
-            )
-    
-            let end = (
-              a: (start_x, task_start_y),
-              b: (end_x, task_start_y),
-              number: (gantt_line.to) / n_cols
-            )
-  
-            let style = line-style
-            if ("style" in gantt_line) { style = gantt_line.style }
-            line(start, end, ..style)
-          }
-        }
-  
-        // Grid
-        if show-grid != false {
-          let month_width = (end_x - start_x) / n_cols
-  
-          on-layer(-1, {
-            // Horizontal
-            if show-grid == true or show-grid == "x" {
-              for i in range(1, n_cols) {
-                line((start_x + month_width * i, start_y), (start_x + month_width * i, end_y), ..grid-style)
-              }
-            }
-            
-            if show-grid == true or show-grid == "y" {
-              for (i, task) in flat_tasks.enumerate() {
-                let (_, task_bottom_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
-                line((start_x, task_bottom_y), (end_x, task_bottom_y), ..grid-style)
-              }
+) = style(
+  styles => {
+    layout(
+      size => {
+        canvas(
+          debug: false,
+          length: size.width,
+          {
+            import draw: *
 
-              if milestone-layout == "aligned" {
-                for (i, milestone) in milestones.enumerate() {
-                  let (_, bottom_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom")
-                  line((start_x, bottom_y), (end_x, bottom_y), ..grid-style)
+            let headers = ()
+            let tasks = ()
+            let flat_tasks = ()
+            let milestones = ()
+            let n_cols = 0
+            let pt = 1 / size.width.pt()
+
+            for line in body {
+              if line.type == "header" {
+                headers.push(line.headers)
+                if line.total > n_cols {
+                  n_cols = line.total
                 }
+              } else if line.type == "task" or line.type == "taskgroup" {
+                tasks.push(line)
+              } else if line.type == "milestone" {
+                milestones.push(line)
               }
             }
-          })
-        }
-  
-        // Milestones
-        if milestones.len() > 0 {
-          let draw-milestone(
-            i,
-            at: 0,
-            body: "",
-            style: milestone-line-style,
-            overhang: milestone-overhang,
-            spacing: spacing,
-            anchor: "top",
-            type: "milestone"
-          ) = {
-            if milestone-layout == "in-place" {
-              let x = (end_x - start_x) * (at / n_cols) + start_x
-    
-              get-ctx(ctx => {
-                let pos = (x: x, y: end_y - (spacing + overhang).pt() * pt)
-                let box_x = x
-                
-                let (w, h) = measure(body, ctx)
-                if x + w / 2 > end_x {
-                  box_x = end_x - w / 2
-                }
-                
-                if i != 0 {
-                  let (prev_end_x, prev_start_y, _) = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".top-right")
-                  let prev_end_y = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".bottom").at(1)
 
-                  if box_x - w / 2 < prev_end_x and pos.y <= prev_start_y and pos.y + h >= prev_end_y {
-                    pos = (x: x, y: prev_end_y - spacing.pt() * pt * 2)
+            // Task titles
+            group(
+              {
+                let i = 0
+                for task in tasks {
+                  if task.type == "task" {
+                    content(
+                      (rel: (0, 0)),
+                      task.name,
+                      anchor: "top",
+                      name: "task" + str(i),
+                      padding: spacing,
+                    )
+
+                    anchor(
+                      "task" + str(i) + "-bottom",
+                      (rel: (0, 0), to: "task" + str(i) + ".bottom", update: true),
+                    )
+                    anchor(
+                      "task" + str(i) + "-top",
+                      (rel: (0, 0), to: "task" + str(i) + ".top-left", update: false),
+                    )
+                    anchor(
+                      "task" + str(i),
+                      (rel: (0, 0), to: "task" + str(i) + ".right", update: false),
+                    )
+
+                    flat_tasks.push(task)
+
+                    i += 1
+                  } else if task.type == "taskgroup" {
+                    for t in task.tasks {
+                      content(
+                        (rel: (0, 0)),
+                        t.name,
+                        anchor: "top",
+                        name: "task" + str(i),
+                        padding: spacing,
+                      )
+
+                      anchor(
+                        "task" + str(i) + "-bottom",
+                        (rel: (0, 0), to: "task" + str(i) + ".bottom", update: true),
+                      )
+                      anchor(
+                        "task" + str(i) + "-top",
+                        (rel: (0, 0), to: "task" + str(i) + ".top-left", update: false),
+                      )
+                      anchor(
+                        "task" + str(i),
+                        (rel: (0, 0), to: "task" + str(i) + ".right", update: false),
+                      )
+
+                      flat_tasks.push(t)
+
+                      i += 1
+                    }
+                  }
+                }
+
+                if milestone-layout == "aligned" {
+                  for (i, milestone) in milestones.enumerate() {
+                    content(
+                      (rel: (0, 0)),
+                      milestone.body,
+                      anchor: "top",
+                      name: "milestone" + str(i),
+                      padding: spacing,
+                    )
+
+                    anchor(
+                      "milestone" + str(i) + "-bottom",
+                      (rel: (0, 0), to: "milestone" + str(i) + ".bottom", update: true),
+                    )
+                    anchor(
+                      "milestone" + str(i) + "-right",
+                      (rel: (0, 0), to: "milestone" + str(i) + ".right", update: false),
+                    )
+                    anchor(
+                      "milestone" + str(i) + "-top",
+                      (rel: (0, 0), to: "milestone" + str(i) + ".top", update: false),
+                    )
+                  }
+                }
+              },
+              name: "titles",
+            )
+
+            // Now that we have laid out the task titles, we can render the task group boxes
+            group(
+              ctx => {
+                on-layer(
+                  1,
+                  {
+                    let (start_x, _, _) = coordinate.resolve(ctx, "titles.top-left")
+                    let end_x = 1 + start_x
+
+                    let i = 0
+                    for group in tasks {
+                      if group.type != "taskgroup" {
+                        i += 1
+                        continue
+                      }
+
+                      let start_i = i
+                      let group_start = none
+                      let group_end = none
+
+                      for task in group.tasks {
+                        if group_start == none {
+                          let (_, start_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-top")
+                          group_start = (start_x, start_y)
+                        }
+
+                        let (_, end_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
+                        group_end = (end_x, end_y)
+
+                        i += 1
+                      }
+
+                      rect(group_start, group_end, stroke: 1pt)
+                    }
+
+                    if tasks-vline {
+                      line("titles.top-right", "titles.bottom-right")
+                    }
+
+                    if box-milestones and milestone-layout == "aligned" {
+                      let start = none
+                      let end = none
+
+                      for (i, milestone) in milestones.enumerate() {
+                        if start == none {
+                          let (_, start_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-top")
+                          start = (start_x, start_y)
+                        }
+                        let (_, end_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom")
+                        end = (end_x, end_y)
+                      }
+
+                      rect(start, end, stroke: 1pt)
+                    }
+                  },
+                )
+              },
+              name: "boxes",
+            )
+
+            get-ctx(
+              ctx => {
+                let (start_x, start_y, _) = coordinate.resolve(ctx, "titles.top-right")
+                let end_x = 1 + coordinate.resolve(ctx, "titles.top-left").at(0)
+                let end_y = coordinate.resolve(ctx, "titles.bottom").at(1)
+
+                group(
+                  {
+                    for (i, header) in headers.rev().enumerate() {
+                      let passed = 0
+                      for group in header {
+                        let group_start = none
+                        let group_end = none
+
+                        for (name, len) in group.titles {
+                          let start = (
+                            a: (start_x, start_y + 16 * (i + 1) * pt),
+                            b: (end_x, start_y + 16 * (i + 1) * pt),
+                            number: passed / n_cols,
+                          )
+
+                          if group_start == none { group_start = start }
+
+                          let end = (
+                            a: (start_x, start_y + 16 * i * pt),
+                            b: (end_x, start_y + 16 * i * pt),
+                            number: (passed + len) / n_cols,
+                          )
+
+                          group_end = end
+
+                          content(start, end, anchor: "top-left", align(center + horizon, name))
+
+                          passed += len
+                        }
+
+                        let group_style = (stroke: 1pt + black)
+                        if "style" in group {
+                          group_style = group.style
+                        }
+                        rect(group_start, group_end, ..group_style)
+                      }
+                    }
+                  },
+                  name: "top-headers",
+                )
+
+                // Draw the lines
+                for (i, task) in flat_tasks.enumerate() {
+                  let start = "titles.task" + str(i)
+                  let (_, task_start_y, _) = coordinate.resolve(ctx, "titles.task" + str(i))
+                  let (task_top_x, task_top_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-top")
+                  let (_, task_bottom_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
+
+                  for gantt_line in task.lines {
+                    let start = (
+                      a: (start_x, task_start_y),
+                      b: (end_x, task_start_y),
+                      number: gantt_line.from / n_cols,
+                    )
+
+                    let end = (
+                      a: (start_x, task_start_y),
+                      b: (end_x, task_start_y),
+                      number: (gantt_line.to) / n_cols,
+                    )
+
+                    let style = line-style
+                    if ("style" in gantt_line) { style = gantt_line.style }
+                    line(start, end, ..style)
+                  }
+                }
+
+                // Grid
+                if show-grid != false {
+                  let month_width = (end_x - start_x) / n_cols
+
+                  on-layer(
+                    -1,
+                    {
+                      // Horizontal
+                      if show-grid == true or show-grid == "x" {
+                        for i in range(1, n_cols) {
+                          line(
+                            (start_x + month_width * i, start_y),
+                            (start_x + month_width * i, end_y),
+                            ..grid-style,
+                          )
+                        }
+                      }
+
+                      if show-grid == true or show-grid == "y" {
+                        for (i, task) in flat_tasks.enumerate() {
+                          let (_, task_bottom_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
+                          line((start_x, task_bottom_y), (end_x, task_bottom_y), ..grid-style)
+                        }
+
+                        if milestone-layout == "aligned" {
+                          for (i, milestone) in milestones.enumerate() {
+                            let (_, bottom_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom")
+                            line((start_x, bottom_y), (end_x, bottom_y), ..grid-style)
+                          }
+                        }
+                      }
+                    },
+                  )
+                }
+
+                // Milestones
+                if milestones.len() > 0 {
+                  let draw-milestone(
+                    i,
+                    at: 0,
+                    body: "",
+                    style: milestone-line-style,
+                    overhang: milestone-overhang,
+                    spacing: spacing,
+                    anchor: "top",
+                    type: "milestone",
+                  ) = {
+                    if milestone-layout == "in-place" {
+                      let x = (end_x - start_x) * (at / n_cols) + start_x
+
+                      get-ctx(
+                        ctx => {
+                          let pos = (x: x, y: end_y - (spacing + overhang).pt() * pt)
+                          let box_x = x
+
+                          let (w, h) = measure(body, ctx)
+                          if x + w / 2 > end_x {
+                            box_x = end_x - w / 2
+                          }
+
+                          if i != 0 {
+                            let (prev_end_x, prev_start_y, _) = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".top-right")
+                            let prev_end_y = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".bottom").at(1)
+
+                            if box_x - w / 2 < prev_end_x and pos.y <= prev_start_y and pos.y + h >= prev_end_y {
+                              pos = (x: x, y: prev_end_y - spacing.pt() * pt * 2)
+                            }
+                          }
+
+                          line((x, start_y), (rel: (0, overhang.pt() * pt), to: pos), ..style)
+                          on-layer(
+                            1,
+                            {
+                              content((box_x, pos.y), anchor: anchor, body, name: "milestone" + str(i))
+                            },
+                          )
+                        },
+                      )
+                    } else if milestone-layout == "aligned" {
+                      let x = (end_x - start_x) * (at / n_cols) + start_x
+                      let end_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-right").at(1)
+                      line((x, start_y), (x, end_y), (start_x, end_y), ..style)
+                    }
                   }
 
+                  on-layer(-0.5, {
+                    if milestone-layout == "aligned" {
+                      set-ctx(ctx => {
+                        ctx.prev.pt = coordinate.resolve(ctx, "titles.bottom")
+                        return ctx
+                      })
+                    }
+                    for (i, milestone) in milestones.enumerate() {
+                      draw-milestone(i, ..milestone)
+                    }
+                  })
                 }
-                
-                line((x, start_y), (rel: (0, overhang.pt() * pt), to: pos), ..style)
-                on-layer(1, {
-                  content((box_x, pos.y), anchor: anchor, body, name: "milestone" + str(i))
-                })
-              })
-            } else if milestone-layout == "aligned" {
-              let x = (end_x - start_x) * (at / n_cols) + start_x
-              let end_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-right").at(1)
-              line((x, start_y), (x, end_y), (start_x, end_y), ..style)
-            }
-          }
-          
-          on-layer(-0.5, {
-            if milestone-layout == "aligned" {
-              set-ctx(ctx => {
-                ctx.prev.pt = coordinate.resolve(ctx, "titles.bottom")
-                return ctx
-              })
-            }
-            for (i, milestone) in milestones.enumerate() {
-              draw-milestone(i, ..milestone)
-            }
-          })
-        }
-      })
-    })
-  })
-})
+              },
+            )
+          },
+        )
+      },
+    )
+  },
+)
 
 #let headerline(..args) = {
   let groups = args.pos()
@@ -329,17 +404,11 @@
     headers.push((titles: current_group))
   }
 
-  return ((
-    type: "header",
-    headers: headers,
-    total: total
-  ),)
+  return ((type: "header", headers: headers, total: total),)
 }
 
 #let group(..args) = {
-  return (
-    group: args.pos(),
-  )
+  return (group: args.pos())
 }
 
 #let task(name, style: none, ..lines) = {
@@ -357,14 +426,8 @@
       }
     }
   }
-  
-  (
-    (
-      type: "task",
-      name: name,
-      lines: processed_lines
-    ),
-  )
+
+  ((type: "task", name: name, lines: processed_lines),)
 }
 
 #let taskgroup(title: none, tasks) = {
@@ -386,19 +449,9 @@
     extratask = ((type: "task", name: title, lines: ((from: min, to: max),)),)
   }
 
-  (
-    (
-      type: "taskgroup",
-      tasks: extratask + tasks
-    ),
-  )
+  ((type: "taskgroup", tasks: extratask + tasks),)
 }
 
 #let milestone(body, at: none, ..options) = {
-  ((
-    type: "milestone",
-    at: at,
-    body: body,
-    ..options.named()
-  ),)
+  ((type: "milestone", at: at, body: body, ..options.named()),)
 }
