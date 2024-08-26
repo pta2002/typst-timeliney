@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.1.2": canvas, draw
+#import "@preview/cetz:0.2.2": canvas, draw, coordinate, util
 
 #let timeline(
   body,
@@ -51,22 +51,22 @@
                     content(
                       (rel: (0, 0)),
                       task.name,
-                      anchor: "top",
+                      anchor: "north",
                       name: "task" + str(i),
                       padding: spacing,
                     )
 
                     anchor(
                       "task" + str(i) + "-bottom",
-                      (rel: (0, 0), to: "task" + str(i) + ".bottom", update: true),
+                      (rel: (0, 0), to: "task" + str(i) + ".south", update: true),
                     )
                     anchor(
                       "task" + str(i) + "-top",
-                      (rel: (0, 0), to: "task" + str(i) + ".top-left", update: false),
+                      (rel: (0, 0), to: "task" + str(i) + ".north-west", update: false),
                     )
                     anchor(
                       "task" + str(i),
-                      (rel: (0, 0), to: "task" + str(i) + ".right", update: false),
+                      (rel: (0, 0), to: "task" + str(i) + ".east", update: false),
                     )
 
                     flat_tasks.push(task)
@@ -77,22 +77,22 @@
                       content(
                         (rel: (0, 0)),
                         t.name,
-                        anchor: "top",
+                        anchor: "north",
                         name: "task" + str(i),
                         padding: spacing,
                       )
 
                       anchor(
                         "task" + str(i) + "-bottom",
-                        (rel: (0, 0), to: "task" + str(i) + ".bottom", update: true),
+                        (rel: (0, 0), to: "task" + str(i) + ".south", update: true),
                       )
                       anchor(
                         "task" + str(i) + "-top",
-                        (rel: (0, 0), to: "task" + str(i) + ".top-left", update: false),
+                        (rel: (0, 0), to: "task" + str(i) + ".north-west", update: false),
                       )
                       anchor(
                         "task" + str(i),
-                        (rel: (0, 0), to: "task" + str(i) + ".right", update: false),
+                        (rel: (0, 0), to: "task" + str(i) + ".east", update: false),
                       )
 
                       flat_tasks.push(t)
@@ -107,22 +107,22 @@
                     content(
                       (rel: (0, 0)),
                       milestone.body,
-                      anchor: "top",
+                      anchor: "north",
                       name: "milestone" + str(i),
                       padding: spacing,
                     )
 
                     anchor(
                       "milestone" + str(i) + "-bottom",
-                      (rel: (0, 0), to: "milestone" + str(i) + ".bottom", update: true),
+                      (rel: (0, 0), to: "milestone" + str(i) + ".south", update: true),
                     )
                     anchor(
                       "milestone" + str(i) + "-right",
-                      (rel: (0, 0), to: "milestone" + str(i) + ".right", update: false),
+                      (rel: (0, 0), to: "milestone" + str(i) + ".east", update: false),
                     )
                     anchor(
                       "milestone" + str(i) + "-top",
-                      (rel: (0, 0), to: "milestone" + str(i) + ".top", update: false),
+                      (rel: (0, 0), to: "milestone" + str(i) + ".north", update: false),
                     )
                   }
                 }
@@ -136,7 +136,7 @@
                 on-layer(
                   1,
                   {
-                    let (start_x, _, _) = coordinate.resolve(ctx, "titles.top-left")
+                    let start_x = coordinate.resolve(ctx, "titles.north-west").at(1).at(0)
                     let end_x = 1 + start_x
 
                     let i = 0
@@ -152,11 +152,11 @@
 
                       for task in group.tasks {
                         if group_start == none {
-                          let (_, start_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-top")
+                          let start_y = coordinate.resolve(ctx, "titles.task" + str(i) + "-top").at(1).at(1)
                           group_start = (start_x, start_y)
                         }
 
-                        let (_, end_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
+                        let end_y = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom").at(1).at(1)
                         group_end = (end_x, end_y)
 
                         i += 1
@@ -166,7 +166,7 @@
                     }
 
                     if tasks-vline {
-                      line("titles.top-right", "titles.bottom-right")
+                      line("titles.north-east", "titles.south-east")
                     }
 
                     if box-milestones and milestone-layout == "aligned" {
@@ -175,10 +175,10 @@
 
                       for (i, milestone) in milestones.enumerate() {
                         if start == none {
-                          let (_, start_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-top")
+                          let start_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-top").at(1).at(1)
                           start = (start_x, start_y)
                         }
-                        let (_, end_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom")
+                        let end_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom").at(1).at(1)
                         end = (end_x, end_y)
                       }
 
@@ -192,9 +192,9 @@
 
             get-ctx(
               ctx => {
-                let (start_x, start_y, _) = coordinate.resolve(ctx, "titles.top-right")
-                let end_x = 1 + coordinate.resolve(ctx, "titles.top-left").at(0)
-                let end_y = coordinate.resolve(ctx, "titles.bottom").at(1)
+                let (start_x, start_y, _) = coordinate.resolve(ctx, "titles.north-east").at(1)
+                let end_x = 1 + coordinate.resolve(ctx, "titles.north-west").at(1).at(0)
+                let end_y = coordinate.resolve(ctx, "titles.south").at(1).at(1)
 
                 group(
                   {
@@ -208,7 +208,7 @@
                           let start = (
                             a: (start_x, start_y + 16 * (i + 1) * pt),
                             b: (end_x, start_y + 16 * (i + 1) * pt),
-                            number: passed / n_cols,
+                            number: passed / n_cols * 100%,
                           )
 
                           if group_start == none { group_start = start }
@@ -216,12 +216,12 @@
                           let end = (
                             a: (start_x, start_y + 16 * i * pt),
                             b: (end_x, start_y + 16 * i * pt),
-                            number: (passed + len) / n_cols,
+                            number: (passed + len) / n_cols * 100%,
                           )
 
                           group_end = end
 
-                          content(start, end, anchor: "top-left", align(center + horizon, name))
+                          content(start, end, anchor: "north-west", align(center + horizon, name))
 
                           passed += len
                         }
@@ -240,21 +240,22 @@
                 // Draw the lines
                 for (i, task) in flat_tasks.enumerate() {
                   let start = "titles.task" + str(i)
-                  let (_, task_start_y, _) = coordinate.resolve(ctx, "titles.task" + str(i))
-                  let (task_top_x, task_top_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-top")
-                  let (_, task_bottom_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
+                  let task_start_y = coordinate.resolve(ctx, "titles.task" + str(i)).at(1).at(1)
+                  let (task_top_x, task_top_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-top").at(1)
+                  let task_bottom_y = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom").at(1).at(1)
+                  let h = task_top_y - task_bottom_y
 
                   for gantt_line in task.lines {
                     let start = (
                       a: (start_x, task_start_y),
                       b: (end_x, task_start_y),
-                      number: (gantt_line.from + offset) / n_cols,
+                      number: (gantt_line.from + offset) / n_cols * 100%,
                     )
 
                     let end = (
                       a: (start_x, task_start_y),
                       b: (end_x, task_start_y),
-                      number: (gantt_line.to + offset) / n_cols,
+                      number: (gantt_line.to + offset) / n_cols * 100%,
                     )
 
                     let style = line-style
@@ -283,17 +284,20 @@
 
                       if show-grid == true or show-grid == "y" {
                         for (i, task) in flat_tasks.enumerate() {
-                          let (_, task_bottom_y, _) = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom")
+                          let task_bottom_y = coordinate.resolve(ctx, "titles.task" + str(i) + "-bottom").at(1).at(1)
                           line((start_x, task_bottom_y), (end_x, task_bottom_y), ..grid-style)
                         }
 
                         if milestone-layout == "aligned" {
                           for (i, milestone) in milestones.enumerate() {
-                            let (_, bottom_y, _) = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom")
+                            let bottom_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-bottom").at(1).at(1)
                             line((start_x, bottom_y), (end_x, bottom_y), ..grid-style)
                           }
                         }
                       }
+
+                      // Border all around the timeline
+                      rect("titles.north-west", (end_x, end_y), stroke: black + 1pt)
                     },
                   )
                 }
@@ -307,7 +311,7 @@
                     style: milestone-line-style,
                     overhang: milestone-overhang,
                     spacing: spacing,
-                    anchor: "top",
+                    anchor: "north",
                     type: "milestone",
                   ) = {
                     if milestone-layout == "in-place" {
@@ -318,14 +322,14 @@
                           let pos = (x: x, y: end_y - (spacing + overhang).pt() * pt)
                           let box_x = x
 
-                          let (w, h) = measure(body, ctx)
+                          let (w, h) = util.measure(ctx, body)
                           if x + w / 2 > end_x {
                             box_x = end_x - w / 2
                           }
 
                           if i != 0 {
-                            let (prev_end_x, prev_start_y, _) = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".top-right")
-                            let prev_end_y = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".bottom").at(1)
+                            let (prev_end_x, prev_start_y, _) = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".north-east")
+                            let prev_end_y = coordinate.resolve-anchor(ctx, "milestone" + str(i - 1) + ".south").at(1)
 
                             if box_x - w / 2 < prev_end_x and pos.y <= prev_start_y and pos.y + h >= prev_end_y {
                               pos = (x: x, y: prev_end_y - spacing.pt() * pt * 2)
@@ -343,7 +347,7 @@
                       )
                     } else if milestone-layout == "aligned" {
                       let x = (end_x - start_x) * (at / n_cols) + start_x
-                      let end_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-right").at(1)
+                      let end_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-right").at(1).at(1)
                       line((x, start_y), (x, end_y), (start_x, end_y), ..style)
                     }
                   }
@@ -351,7 +355,7 @@
                   on-layer(-0.5, {
                     if milestone-layout == "aligned" {
                       set-ctx(ctx => {
-                        ctx.prev.pt = coordinate.resolve(ctx, "titles.bottom")
+                        ctx.prev.pt = coordinate.resolve(ctx, "titles.south").at(1)
                         return ctx
                       })
                     }
