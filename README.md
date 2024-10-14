@@ -62,3 +62,9 @@ Import with `#import "@preview/timeliney:0.0.1"`. Then, call the `timeliney.time
 
 ## Documentation
 See [the manual](manual.pdf)!
+
+## Changelog
+
+### 0.1.0
+- Update CeTZ to 0.2.2 (@LordBaryhobal)
+- Add offset parameter
