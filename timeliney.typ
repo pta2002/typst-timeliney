@@ -12,12 +12,7 @@
   box-milestones: true,
   milestone-line-style: (),
   offset: 0,
-) = layout(
-      size => {
-        canvas.with(
-          debug: false,
-          length: size.width,
-        )({
+) = layout(size => canvas.with(debug: false, length: size.width)({
             import draw: *
 
             let headers = ()
@@ -126,8 +121,7 @@
               })
 
             // Now that we have laid out the task titles, we can render the task group boxes
-            group.with(name: "boxes")(
-              ctx => on-layer.with(1)({
+            group.with(name: "boxes")(ctx => on-layer.with(1)({
                     let start_x = coordinate.resolve(ctx, "titles.north-west").at(1).at(0)
                     let end_x = 1 + start_x
 
@@ -176,17 +170,14 @@
 
                       rect(start, end, stroke: 1pt)
                     }
-                  }),
-            )
+                  }))
 
-            get-ctx(
-              ctx => {
+            get-ctx(ctx => {
                 let (start_x, start_y, _) = coordinate.resolve(ctx, "titles.north-east").at(1)
                 let end_x = 1 + coordinate.resolve(ctx, "titles.north-west").at(1).at(0)
                 let end_y = coordinate.resolve(ctx, "titles.south").at(1).at(1)
 
-                group.with(name: "top-headers")(
-                  {
+                group.with(name: "top-headers")({
                     for (i, header) in headers.rev().enumerate() {
                       let passed = 0
                       for group in header {
@@ -222,8 +213,7 @@
                         rect(group_start, group_end, ..group_style)
                       }
                     }
-                  },
-                )
+                  })
 
                 // Draw the lines
                 for (i, task) in flat_tasks.enumerate() {
@@ -302,8 +292,7 @@
                     if milestone-layout == "in-place" {
                       let x = (end_x - start_x) * ((at + offset) / n_cols) + start_x
 
-                      get-ctx(
-                        ctx => {
+                      get-ctx(ctx => {
                           let pos = (x: x, y: end_y - (spacing + overhang).pt() * pt)
                           let box_x = x
 
@@ -325,8 +314,7 @@
                           on-layer.with(1)({
                               content((box_x, pos.y), anchor: anchor, body, name: "milestone" + str(i))
                             })
-                        },
-                      )
+                        })
                     } else if milestone-layout == "aligned" {
                       let x = (end_x - start_x) * (at / n_cols) + start_x
                       let end_y = coordinate.resolve(ctx, "titles.milestone" + str(i) + "-right").at(1).at(1)
@@ -346,12 +334,8 @@
                     }
                   })
                 }
-              },
-            )
-          },
-        )
-      },
-    )
+              })
+          }))
 
 #let headerline(..args) = {
   let groups = args.pos()
