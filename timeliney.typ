@@ -14,10 +14,10 @@
   offset: 0,
 ) = layout(
       size => {
-        canvas(
+        canvas.with(
           debug: false,
           length: size.width,
-          {
+        )({
             import draw: *
 
             let headers = ()
@@ -41,8 +41,7 @@
             }
 
             // Task titles
-            group(
-              {
+            group.with(name: "titles")({
                 let i = 0
                 for task in tasks {
                   if task.type == "task" {
@@ -124,16 +123,11 @@
                     )
                   }
                 }
-              },
-              name: "titles",
-            )
+              })
 
             // Now that we have laid out the task titles, we can render the task group boxes
-            group(
-              ctx => {
-                on-layer(
-                  1,
-                  {
+            group.with(name: "boxes")(
+              ctx => on-layer.with(1)({
                     let start_x = coordinate.resolve(ctx, "titles.north-west").at(1).at(0)
                     let end_x = 1 + start_x
 
@@ -182,10 +176,7 @@
 
                       rect(start, end, stroke: 1pt)
                     }
-                  },
-                )
-              },
-              name: "boxes",
+                  }),
             )
 
             get-ctx(
@@ -194,7 +185,7 @@
                 let end_x = 1 + coordinate.resolve(ctx, "titles.north-west").at(1).at(0)
                 let end_y = coordinate.resolve(ctx, "titles.south").at(1).at(1)
 
-                group(
+                group.with(name: "top-headers")(
                   {
                     for (i, header) in headers.rev().enumerate() {
                       let passed = 0
@@ -232,7 +223,6 @@
                       }
                     }
                   },
-                  name: "top-headers",
                 )
 
                 // Draw the lines
@@ -266,9 +256,7 @@
                 if show-grid != false {
                   let month_width = (end_x - start_x) / n_cols
 
-                  on-layer(
-                    -1,
-                    {
+                  on-layer.with(-1)({
                       // Horizontal
                       if show-grid == true or show-grid == "x" {
                         for i in range(1, n_cols) {
@@ -296,8 +284,7 @@
 
                       // Border all around the timeline
                       rect("titles.north-west", (end_x, end_y), stroke: black + 1pt)
-                    },
-                  )
+                    })
                 }
 
                 // Milestones
@@ -335,12 +322,9 @@
                           }
 
                           line((x, start_y), (rel: (0, overhang.pt() * pt), to: pos), ..style)
-                          on-layer(
-                            1,
-                            {
+                          on-layer.with(1)({
                               content((box_x, pos.y), anchor: anchor, body, name: "milestone" + str(i))
-                            },
-                          )
+                            })
                         },
                       )
                     } else if milestone-layout == "aligned" {
@@ -350,7 +334,7 @@
                     }
                   }
 
-                  on-layer(-0.5, {
+                  on-layer.with(-0.5)({
                     if milestone-layout == "aligned" {
                       set-ctx(ctx => {
                         ctx.prev.pt = coordinate.resolve(ctx, "titles.south").at(1)
