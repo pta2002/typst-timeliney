@@ -12,9 +12,7 @@
   box-milestones: true,
   milestone-line-style: (),
   offset: 0,
-) = style(
-  styles => {
-    layout(
+) = layout(
       size => {
         canvas(
           debug: false,
@@ -370,8 +368,6 @@
         )
       },
     )
-  },
-)
 
 #let headerline(..args) = {
   let groups = args.pos()
