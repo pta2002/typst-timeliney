@@ -3,6 +3,7 @@
 #let timeline(
   body,
   spacing: 5pt,
+  heading-spacing: 10pt,
   show-grid: false,
   grid-style: (stroke: (dash: "dashed", thickness: .5pt, paint: gray)),
   tasks-vline: true,
@@ -21,6 +22,8 @@
   let milestones = ()
   let n_cols = 0
   let pt = 1 / size.width.pt()
+
+  let heading-spacing = heading-spacing.pt()
 
   for line in body {
     if line.type == "header" {
@@ -178,7 +181,24 @@
     let end_y = coordinate.resolve(ctx, "titles.south").at(1).at(1)
 
     group.with(name: "top-headers")({
+
+      // the offset to the start_y, use unit pt
+      let current_start_y_offset = 0
+
       for (i, header) in headers.rev().enumerate() {
+        
+        // before creat content, find the hightest name, and the height of header will fit it
+        let max_name_height = 0
+        for group in header {
+          for (name, len) in group.titles {
+            let name_height = measure(name).height.pt()
+            if max_name_height < name_height {
+              max_name_height = name_height
+            }
+          }
+        }
+        let current_header_height = max_name_height + heading-spacing
+
         let passed = 0
         for group in header {
           let group_start = none
@@ -186,16 +206,16 @@
 
           for (name, len) in group.titles {
             let start = (
-              a: (start_x, start_y + 16 * (i + 1) * pt),
-              b: (end_x, start_y + 16 * (i + 1) * pt),
+              a: (start_x, start_y + (current_start_y_offset + current_header_height) * pt),
+              b: (end_x, start_y + (current_start_y_offset + current_header_height) * pt),
               number: passed / n_cols * 100%,
             )
 
             if group_start == none { group_start = start }
 
             let end = (
-              a: (start_x, start_y + 16 * i * pt),
-              b: (end_x, start_y + 16 * i * pt),
+              a: (start_x, start_y + current_start_y_offset * pt),
+              b: (end_x, start_y + current_start_y_offset * pt),
               number: (passed + len) / n_cols * 100%,
             )
 
@@ -212,6 +232,9 @@
           }
           rect(group_start, group_end, ..group_style)
         }
+
+          // add current height to offset, get the offset of next line of header
+          current_start_y_offset = current_start_y_offset + current_header_height
       }
     })
 
