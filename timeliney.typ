@@ -13,6 +13,7 @@
   box-milestones: true,
   milestone-line-style: (),
   offset: 0,
+  cell-line-style: (stroke: 1pt + black)
 ) = layout(size => canvas.with(debug: false, length: size.width)({
   import draw: *
 
@@ -151,11 +152,11 @@
         i += 1
       }
 
-      rect(group_start, group_end, stroke: 1pt)
+      rect(group_start, group_end, ..cell-line-style)
     }
 
     if tasks-vline {
-      line("titles.north-east", "titles.south-east")
+      line("titles.north-east", "titles.south-east", ..cell-line-style)
     }
 
     if box-milestones and milestone-layout == "aligned" {
@@ -171,7 +172,7 @@
         end = (end_x, end_y)
       }
 
-      rect(start, end, stroke: 1pt)
+      rect(start, end, ..cell-line-style)
     }
   }))
 
@@ -226,7 +227,7 @@
             passed += len
           }
 
-          let group_style = (stroke: 1pt + black)
+          let group_style = cell-line-style
           if "style" in group {
             group_style = group.style
           }
@@ -296,7 +297,7 @@
         }
 
         // Border all around the timeline
-        rect("titles.north-west", (end_x, end_y), stroke: black + 1pt)
+        rect("titles.north-west", (end_x, end_y), ..cell-line-style)
       })
     }
 
