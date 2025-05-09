@@ -186,7 +186,7 @@
       let current_start_y_offset = 0
 
       for (i, header) in headers.rev().enumerate() {
-        
+
         // before creat content, find the hightest name, and the height of header will fit it
         let max_name_height = 0
         for group in header {
@@ -422,7 +422,8 @@
   ((type: "task", name: name, lines: processed_lines),)
 }
 
-#let taskgroup(title: none, tasks) = {
+
+#let taskgroup(title: none, tasks, style: none) = {
   let extratask = ()
   if title != none {
     let min = none
@@ -438,12 +439,18 @@
       }
     }
 
-    extratask = ((type: "task", name: title, lines: ((from: min, to: max),)),)
+    extratask = ((type: "task", name: title, lines: ((from: min, to: max, style: style),)),)
   }
 
   ((type: "taskgroup", tasks: extratask + tasks),)
 }
 
-#let milestone(body, at: none, ..options) = {
-  ((type: "milestone", at: at, body: body, ..options.named()),)
+#let milestone(body, at: none, emoji: none, ..options) = {
+  let display_body = if emoji != none {
+    emoji + " " + body
+  } else {
+    body
+  }
+
+  ((type: "milestone", at: at, body: display_body, ..options.named()),)
 }
