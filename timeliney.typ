@@ -447,3 +447,4 @@
 
 #let milestone(body, at: none, ..options) = {
    ((type: "milestone", at: at, body: body, ..options.named()),)
+}
