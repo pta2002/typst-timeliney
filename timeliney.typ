@@ -445,12 +445,5 @@
   ((type: "taskgroup", tasks: extratask + tasks),)
 }
 
-#let milestone(body, at: none, emoji: none, ..options) = {
-  let display_body = if emoji != none {
-    emoji + " " + body
-  } else {
-    body
-  }
-
-  ((type: "milestone", at: at, body: display_body, ..options.named()),)
-}
+#let milestone(body, at: none, ..options) = {
+   ((type: "milestone", at: at, body: body, ..options.named()),)
