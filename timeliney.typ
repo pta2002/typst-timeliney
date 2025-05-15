@@ -186,7 +186,7 @@
       let current_start_y_offset = 0
 
       for (i, header) in headers.rev().enumerate() {
-
+      
         // before creat content, find the hightest name, and the height of header will fit it
         let max_name_height = 0
         for group in header {
