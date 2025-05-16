@@ -422,7 +422,8 @@
   ((type: "task", name: name, lines: processed_lines),)
 }
 
-#let taskgroup(title: none, tasks) = {
+
+#let taskgroup(title: none, tasks, style: none) = {
   let extratask = ()
   if title != none {
     let min = none
@@ -438,7 +439,7 @@
       }
     }
 
-    extratask = ((type: "task", name: title, lines: ((from: min, to: max),)),)
+    extratask = ((type: "task", name: title, lines: ((from: min, to: max, style: style),)),)
   }
 
   ((type: "taskgroup", tasks: extratask + tasks),)
