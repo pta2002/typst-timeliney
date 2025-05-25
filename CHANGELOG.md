@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.3.0
+
+- Add optional parameters for milestones and taskgroups (@abhi18av)
+- misc: move changelog to CHANGELOG.md (Pedro Alves)
+
+
 ## 0.2.1
 - Update CeTZ to 0.3.2 (@JKRhb)
 
