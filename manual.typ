@@ -25,6 +25,7 @@
   arg(milestone-layout: "in-place"),
   arg(box-milestones: true),
   arg(milestone-line-style: ()),
+  arg(cell-line-style: (stroke: 1pt + black)),
   arg(offset: 0),
 )[
 #argument("spacing", types: ("length",), default: 5pt)[
@@ -81,6 +82,10 @@ Whether to draw a box around the milestones (only has an effect if
 
 #argument("milestone-line-style", types: ("dictionary",), default: ())[
   The style to use for the milestone lines
+]
+
+#argument("cell-line-style", types: ("dictionary",), default: (stroke: 1pt + black))[
+  The style to use for the cells' border lines
 ]
 
 #argument("offset", types: ("float",), default: 0)[
