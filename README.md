@@ -18,10 +18,23 @@ Here's a fully-featured example:
       group(..range(4).map(n => strong("Q" + str(n + 1)))),
     )
   
-    taskgroup(title: [*Research*], {
-      task("Research the market", (0, 2), style: (stroke: 2pt + gray))
-      task("Conduct user surveys", (1, 3), style: (stroke: 2pt + gray))
-    })
+    taskgroup(
+      title: [*Research*],
+      content: text(10pt, white)[*John + Julia*],
+      style: (stroke: 14pt + black),
+      {
+        task(
+          "Research the market",
+          (from: 0, to: 2, content: text(9pt)[John (70% done)]),
+          style: (stroke: 13pt + gray),
+        )
+        task(
+          "Conduct user surveys",
+          (from: 1, to: 3, content: text(9pt)[Julia (50% done)]),
+          style: (stroke: 13pt + gray),
+        )
+      },
+    )
 
     taskgroup(title: [*Development*], {
       task("Create mock-ups", (2, 3), style: (stroke: 2pt + gray))
