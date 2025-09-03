@@ -263,6 +263,10 @@
         let style = line-style
         if ("style" in gantt_line) { style = gantt_line.style }
         line(start, end, ..style)
+
+        if ("content" in gantt_line) {
+          content((start, 50%, end), gantt_line.content)
+        }
       }
     }
 
@@ -409,6 +413,9 @@
 
   for line in lines.pos() {
     if type(line) == dictionary {
+      if (style != none) and ("style" not in line) {
+        line.style = style
+      }
       processed_lines.push(line)
     } else {
       let (from, to) = line
@@ -424,7 +431,7 @@
 }
 
 
-#let taskgroup(title: none, tasks, style: none) = {
+#let taskgroup(title: none, tasks, style: none, content: none) = {
   let extratask = ()
   if title != none {
     let min = none
@@ -440,7 +447,7 @@
       }
     }
 
-    extratask = ((type: "task", name: title, lines: ((from: min, to: max, style: style),)),)
+    extratask = ((type: "task", name: title, lines: ((from: min, to: max, style: style, content: content),)),)
   }
 
   ((type: "taskgroup", tasks: extratask + tasks),)
