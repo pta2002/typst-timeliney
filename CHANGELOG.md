@@ -1,7 +1,11 @@
 # CHANGELOG
 
-## 0.3.0
+## 0.4.0
+- feat: make cell line style configurable (@jghauser)
+- Update cetz version to 0.4.1 (@F2011)
+- Allow content on top of a task (@jipolanco)
 
+## 0.3.0
 - Add optional parameters for milestones and taskgroups (@abhi18av)
 - misc: move changelog to CHANGELOG.md (Pedro Alves)
 
