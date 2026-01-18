@@ -19,7 +19,7 @@
   arg(spacing: 5pt),
   arg(show-grid: false),
   arg(grid-style: (stroke: (dash: "dashed", thickness: .5pt, paint: gray))),
-  arg(task-vline: true),
+  arg(tasks-vline: true),
   arg(line-style: (stroke: 3pt)),
   arg(milestone-overhang: 5pt),
   arg(milestone-layout: "in-place"),
@@ -44,7 +44,7 @@
 The style to use for the grid (has no effect if `show-grid` is false)
 ]
 
-#argument("task-vline", types: ("boolean",), default: true)[
+#argument("tasks-vline", types: ("boolean",), default: true)[
   Show a vertical line next to the task names
 ]
 
