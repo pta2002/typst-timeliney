@@ -13,7 +13,8 @@
   box-milestones: true,
   milestone-line-style: (),
   offset: 0,
-  cell-line-style: (stroke: 1pt + black)
+  cell-line-style: (stroke: 1pt + black),
+  task-align: "center"
 ) = layout(size => canvas.with(debug: false, length: size.width)({
   import draw: *
 
@@ -42,19 +43,32 @@
   // Task titles
   group.with(name: "titles")({
     let i = 0
+
+    // task-align logic
+    let t-anchor = "north"      
+    let t-update-anchor = "south" 
+    
+    if task-align == "left" { 
+        t-anchor = "north-west"
+        t-update-anchor = "south-west" 
+    } else if task-align == "right" { 
+        t-anchor = "north-east"
+        t-update-anchor = "south-east"
+    }
+
     for task in tasks {
       if task.type == "task" {
         content(
           (rel: (0, 0)),
           task.name,
-          anchor: "north",
+          anchor: t-anchor,
           name: "task" + str(i),
           padding: spacing,
         )
 
         anchor(
           "task" + str(i) + "-bottom",
-          (rel: (0, 0), to: "task" + str(i) + ".south", update: true),
+          (rel: (0, 0), to: "task" + str(i) + "." + t-update-anchor, update: true),
         )
         anchor(
           "task" + str(i) + "-top",
@@ -73,14 +87,14 @@
           content(
             (rel: (0, 0)),
             t.name,
-            anchor: "north",
+            anchor: t-anchor,
             name: "task" + str(i),
             padding: spacing,
           )
 
           anchor(
             "task" + str(i) + "-bottom",
-            (rel: (0, 0), to: "task" + str(i) + ".south", update: true),
+            (rel: (0, 0), to: "task" + str(i) + "." + t-update-anchor, update: true),
           )
           anchor(
             "task" + str(i) + "-top",
