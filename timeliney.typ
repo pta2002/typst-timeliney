@@ -40,6 +40,9 @@
     }
   }
 
+  // sort the milestones for correct layout
+  milestones = milestones.sorted(key: m => m.at)
+
   // Task titles
   group.with(name: "titles")({
     let i = 0
